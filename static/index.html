@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processor / 图片处理工具</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Image Processor / 图片处理工具</h1>
+        <p class="subtitle">本地图片格式转换、缩放、裁剪和压缩工具</p>
+
+        <!-- 上传区域 -->
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+            </div>
+            <p>拖拽图片到这里，或点击选择</p>
+            <p class="upload-hint">支持 JPG, PNG, WebP, BMP, TIFF</p>
+            <input type="file" id="fileInput" multiple accept="image/*" hidden>
+        </div>
+
+        <!-- 已选文件列表 -->
+        <div class="file-list" id="fileList" style="display:none;">
+            <div class="file-list-header">
+                <span id="fileCount">已选择 0 个文件</span>
+                <button class="btn-clear" id="btnClear">清空</button>
+            </div>
+            <ul id="fileNameList"></ul>
+        </div>
+
+        <!-- 指令输入 -->
+        <div class="instruction-section">
+            <label for="instruction">处理指令 / Processing Instruction</label>
+            <input type="text" id="instruction" placeholder="例如：宽度1000px，转成WebP，压缩到300KB以内">
+        </div>
+
+        <!-- 快捷按钮 -->
+        <div class="preset-buttons">
+            <button class="btn-preset" data-text="独立站产品主图">产品主图</button>
+            <button class="btn-preset" data-text="宽度1000px，转成WebP，压缩到300KB以内">WebP 300KB</button>
+            <button class="btn-preset" data-text="宽度800px，转成JPG，压缩到200KB以内">JPG 200KB</button>
+            <button class="btn-preset" data-text="压缩到300KB以内">只压缩</button>
+            <button class="btn-preset" data-text="裁剪成1000x1000，再转成WebP">裁剪 1000x1000</button>
+        </div>
+
+        <!-- 提交按钮 -->
+        <button class="btn-process" id="btnProcess">开始处理</button>
+
+        <!-- 处理中状态 -->
+        <div class="processing" id="processing" style="display:none;">
+            <div class="spinner"></div>
+            <span>Processing... / 处理中...</span>
+        </div>
+
+        <!-- 错误显示 -->
+        <div class="error-box" id="errorBox" style="display:none;">
+            <div class="error-code" id="errorCode"></div>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="error-suggestion" id="errorSuggestion"></div>
+        </div>
+
+        <!-- 单张结果 -->
+        <div class="result-single" id="resultSingle" style="display:none;">
+            <h2>处理结果 / Result</h2>
+            <div class="result-compare">
+                <div class="result-card original">
+                    <h3>原图 / Original</h3>
+                    <table>
+                        <tr><td>文件名</td><td id="origFilename"></td></tr>
+                        <tr><td>格式</td><td id="origFormat"></td></tr>
+                        <tr><td>尺寸</td><td id="origSize"></td></tr>
+                        <tr><td>大小</td><td id="origFileSize"></td></tr>
+                    </table>
+                </div>
+                <div class="result-arrow">→</div>
+                <div class="result-card processed">
+                    <h3>处理后 / Processed</h3>
+                    <table>
+                        <tr><td>文件名</td><td id="procFilename"></td></tr>
+                        <tr><td>格式</td><td id="procFormat"></td></tr>
+                        <tr><td>尺寸</td><td id="procSize"></td></tr>
+                        <tr><td>大小</td><td id="procFileSize"></td></tr>
+                        <tr><td>压缩率</td><td id="procRatio"></td></tr>
+                    </table>
+                    <div class="preview-area">
+                        <img id="procPreview" src="" alt="preview">
+                    </div>
+                    <a class="btn-download" id="procDownload" href="#" download>下载 / Download</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批量结果 -->
+        <div class="result-batch" id="resultBatch" style="display:none;">
+            <h2>批量处理结果 / Batch Result</h2>
+            <div class="batch-summary">
+                <div class="batch-stat">
+                    <span class="stat-num" id="batchTotal">0</span>
+                    <span class="stat-label">总数</span>
+                </div>
+                <div class="batch-stat success">
+                    <span class="stat-num" id="batchSuccess">0</span>
+                    <span class="stat-label">成功</span>
+                </div>
+                <div class="batch-stat failed">
+                    <span class="stat-num" id="batchFailed">0</span>
+                    <span class="stat-label">失败</span>
+                </div>
+            </div>
+            <div id="batchZipArea" style="display:none;">
+                <a class="btn-download btn-zip" id="batchZipDownload" href="#" download>下载全部 ZIP</a>
+            </div>
+            <div class="batch-results" id="batchResultsList"></div>
+            <div class="batch-failures" id="batchFailuresList"></div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
