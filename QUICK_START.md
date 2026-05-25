@@ -59,4 +59,4 @@ A: 先运行 `stop_image_processor.bat`，或重启电脑。
 A: Windows curl 有编码限制，建议用 Python requests 或 n8n HTTP Request 节点调用，中文指令在网页端和 API 中都能正常解析。
 
 **Q: 图片处理后画质损失大？**
-A: 当前默认策略已优化：WebP 默认质量 88，JPG 默认质量 90。如仍不满意，可手动指定更高质量，如 `quality 95`。
+A: 当前默认策略已优化：WebP 默认质量 90，JPG 默认质量 90。如仍不满意，可手动指定更高质量，如 `quality 95`。

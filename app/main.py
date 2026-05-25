@@ -365,7 +365,7 @@ async def docs_info():
         "example_curl": {
             "health": 'curl http://127.0.0.1:8000/health',
             "single_no_compress": 'curl -X POST "http://127.0.0.1:8000/api/process-command" -F "image=@sample.png" -F "instruction=convert to WebP" -F "compress_mode=none"',
-            "single_compress": 'curl -X POST "http://127.0.0.1:8000/api/process-command" -F "image=@sample.png" -F "instruction=convert to WebP" -F "compress_mode=lossy" -F "quality=85"',
+            "single_compress": 'curl -X POST "http://127.0.0.1:8000/api/process-command" -F "image=@sample.png" -F "instruction=convert to WebP" -F "compress_mode=lossy" -F "quality=90"',
             "batch": 'curl -X POST "http://127.0.0.1:8000/api/batch-process-command" -F "images=@a.png" -F "images=@b.jpg" -F "instruction=转成WebP" -F "zip_output=true"',
             "folder": 'curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" -H "Content-Type: application/json" -d \'{"input_dir":"D:/input","instruction":"convert to WebP","compress_mode":"none"}\'',
         },

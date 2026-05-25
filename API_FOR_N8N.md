@@ -61,7 +61,7 @@ curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\n8n-files\sample.png" ^
   -F "instruction=convert to WebP" ^
   -F "compress_mode=lossy" ^
-  -F "quality=85"
+  -F "quality=90"
 ```
 
 ### n8n HTTP Request 节点配置
@@ -95,7 +95,7 @@ curl -X POST "http://127.0.0.1:8000/api/process-command" ^
     "file_size_kb": 45.2,
     "download_url": "/download/sample-1779271590493-abcd.webp",
     "preview_url": "/download/sample-1779271590493-abcd.webp",
-    "quality_used": 88,
+    "quality_used": 90,
     "target_kb": 300,
     "final_file_size_kb": 45.2,
     "size_target_reached": true,

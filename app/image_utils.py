@@ -20,7 +20,7 @@ SUPPORTED_OUTPUT_FORMATS = {"webp", "jpg", "jpeg", "png"}
 OUTPUT_DIR = Path(__file__).parent.parent / "outputs"
 
 # 压缩质量常量
-WEBP_DEFAULT_QUALITY = 88
+WEBP_DEFAULT_QUALITY = 90
 JPEG_DEFAULT_QUALITY = 90
 MIN_QUALITY = 72
 JPEG_MIN_QUALITY = 75
@@ -215,7 +215,7 @@ def save_image(
     img: Image.Image,
     output_path: str,
     target_format: str,
-    quality: int = 82,
+    quality: int = 90,
 ) -> int:
     """保存图片，返回文件大小（字节）"""
     target_format = target_format.lower()
@@ -240,7 +240,7 @@ def compress_to_target(
     output_path: str,
     target_format: str,
     target_kb: float,
-    start_quality: int = 82,
+    start_quality: int = 90,
     min_quality: Optional[int] = None,
 ) -> Tuple[int, Optional[str], int]:
     """

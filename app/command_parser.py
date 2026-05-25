@@ -74,7 +74,7 @@ def _detect_preset(text: str) -> Optional[Dict[str, Any]]:
             "resize": {"mode": "exact", "width": 1000, "height": 1000, "pad": True},
             "crop": {},
             "convert": {"format": "webp"},
-            "compress": {"quality": 88},
+            "compress": {"quality": 90},
         }
 
     # 博客配图
@@ -83,7 +83,7 @@ def _detect_preset(text: str) -> Optional[Dict[str, Any]]:
             "resize": {"mode": "exact", "width": 1200, "height": 800, "pad": True},
             "crop": {},
             "convert": {"format": "webp"},
-            "compress": {"quality": 88},
+            "compress": {"quality": 90},
         }
 
     # 网站 Banner
@@ -92,7 +92,7 @@ def _detect_preset(text: str) -> Optional[Dict[str, Any]]:
             "resize": {"mode": "exact", "width": 1200, "height": 600, "pad": True},
             "crop": {},
             "convert": {"format": "webp"},
-            "compress": {"quality": 88},
+            "compress": {"quality": 90},
         }
 
     # LinkedIn 方图
@@ -101,7 +101,7 @@ def _detect_preset(text: str) -> Optional[Dict[str, Any]]:
             "resize": {"mode": "exact", "width": 1080, "height": 1080, "pad": True},
             "crop": {},
             "convert": {"format": "webp"},
-            "compress": {"quality": 88},
+            "compress": {"quality": 90},
         }
 
     # Instagram 竖图
@@ -110,7 +110,7 @@ def _detect_preset(text: str) -> Optional[Dict[str, Any]]:
             "resize": {"mode": "exact", "width": 1080, "height": 1350, "pad": True},
             "crop": {},
             "convert": {"format": "webp"},
-            "compress": {"quality": 88},
+            "compress": {"quality": 90},
         }
 
     return None

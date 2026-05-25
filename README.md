@@ -52,7 +52,7 @@
 
 | 按钮 | 指令 | 效果 |
 |------|------|------|
-| 产品主图 | 独立站产品主图 | 1000x1000 白底补边 WebP 质量88 |
+| 产品主图 | 独立站产品主图 | 1000x1000 白底补边 WebP 质量90 |
 | WebP 300KB | width 1000px, convert to WebP, compress under 300KB | 宽度1000 WebP 300KB以内 |
 | JPG 200KB | width 800px, convert to JPG, compress under 200KB | 宽度800 JPG 200KB以内 |
 | 只压缩 | compress under 300KB | 不改尺寸 只压缩 |
@@ -85,7 +85,7 @@ curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\path\to\image.png" ^
   -F "instruction=convert to WebP" ^
   -F "compress_mode=lossy" ^
-  -F "quality=85"
+  -F "quality=90"
 ```
 
 ### 文件夹批量 API 示例
@@ -123,17 +123,17 @@ curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" ^
 
 | 指令 | 效果 |
 |------|------|
-| compress / 压缩 | 使用格式默认质量（WebP=88, JPG=90） |
+| compress / 压缩 | 使用默认质量 90 |
 | compress under 300KB / 压缩到300KB以内 | 尝试压缩到 300KB |
 | less than 1MB / 小于1MB | 尝试压缩到 1MB |
-| quality 80 / 质量80 | 指定输出质量 80 |
+| quality 90 / 质量90 | 指定输出质量 90（推荐） |
 | no compress / 不压缩 | 仅格式转换，quality=100，不压缩 |
 
 ### 组合指令
 
 ```
 width 1000px, convert to WebP, compress under 300KB
-crop to 1000x1000, save as jpg, quality 85
+crop to 1000x1000, save as jpg, quality 90
 height 800px, save as png
 ```
 
@@ -141,17 +141,17 @@ height 800px, save as png
 
 | 指令 | 尺寸 | 格式 | 质量 |
 |------|------|------|------|
-| website product image / 独立站产品主图 | 1000x1000 白底补边 | WebP | 88 |
-| blog image / 博客配图 | 1200x800 | WebP | 88 |
-| banner image / 网站Banner | 1200x600 | WebP | 88 |
-| LinkedIn square / LinkedIn方图 | 1080x1080 | WebP | 88 |
-| Instagram portrait / Instagram竖图 | 1080x1350 | WebP | 88 |
+| website product image / 独立站产品主图 | 1000x1000 白底补边 | WebP | 90 |
+| blog image / 博客配图 | 1200x800 | WebP | 90 |
+| banner image / 网站Banner | 1200x600 | WebP | 90 |
+| LinkedIn square / LinkedIn方图 | 1080x1080 | WebP | 90 |
+| Instagram portrait / Instagram竖图 | 1080x1350 | WebP | 90 |
 
 ## 压缩质量策略
 
 | 格式 | 默认质量 | 最低质量 |
 |------|---------|---------|
-| WebP | 88 | 72 |
+| WebP | 90 | 72 |
 | JPG | 90 | 75 |
 
 - 压缩到目标大小时，每次降低质量 3
