@@ -74,9 +74,18 @@
 ### 单图 API 示例
 
 ```bash
+# 不压缩，仅转换格式（quality=100）
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\path\to\image.png" ^
-  -F "instruction=width 1000px, convert to WebP, compress under 300KB"
+  -F "instruction=convert to WebP" ^
+  -F "compress_mode=none"
+
+# 压缩模式，指定质量
+curl -X POST "http://127.0.0.1:8000/api/process-command" ^
+  -F "image=@D:\path\to\image.png" ^
+  -F "instruction=convert to WebP" ^
+  -F "compress_mode=lossy" ^
+  -F "quality=85"
 ```
 
 ### 文件夹批量 API 示例
@@ -118,6 +127,7 @@ curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" ^
 | compress under 300KB / 压缩到300KB以内 | 尝试压缩到 300KB |
 | less than 1MB / 小于1MB | 尝试压缩到 1MB |
 | quality 80 / 质量80 | 指定输出质量 80 |
+| no compress / 不压缩 | 仅格式转换，quality=100，不压缩 |
 
 ### 组合指令
 

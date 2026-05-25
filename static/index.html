@@ -40,6 +40,26 @@
             <input type="text" id="instruction" placeholder="例如：宽度1000px，转成WebP，压缩到300KB以内">
         </div>
 
+        <!-- 压缩模式 -->
+        <div class="compress-mode-section">
+            <label>压缩模式 / Compress Mode</label>
+            <div class="compress-mode-options">
+                <label class="radio-option">
+                    <input type="radio" name="compressMode" value="none" checked>
+                    <span class="radio-label">不压缩，仅转换格式（推荐）</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="compressMode" value="lossy">
+                    <span class="radio-label">开启压缩</span>
+                </label>
+            </div>
+            <div class="quality-section" id="qualitySection" style="display:none;">
+                <label for="qualitySlider">压缩质量 / Quality: <span id="qualityValue">90</span></label>
+                <input type="range" id="qualitySlider" min="60" max="100" value="90" step="1">
+                <div class="quality-hint">质量越低文件越小，画质损失越大（最低 72）</div>
+            </div>
+        </div>
+
         <!-- 快捷按钮 -->
         <div class="preset-buttons">
             <button class="btn-preset" data-text="独立站产品主图">产品主图</button>

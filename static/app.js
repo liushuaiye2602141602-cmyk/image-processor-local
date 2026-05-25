@@ -18,8 +18,35 @@
     const errorBox = document.getElementById('errorBox');
     const resultSingle = document.getElementById('resultSingle');
     const resultBatch = document.getElementById('resultBatch');
+    const qualitySection = document.getElementById('qualitySection');
+    const qualitySlider = document.getElementById('qualitySlider');
+    const qualityValue = document.getElementById('qualityValue');
 
     let selectedFiles = [];
+
+    // 压缩模式切换
+    document.querySelectorAll('input[name="compressMode"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            if (radio.value === 'lossy') {
+                qualitySection.style.display = 'block';
+            } else {
+                qualitySection.style.display = 'none';
+            }
+        });
+    });
+
+    // 质量滑块实时显示
+    if (qualitySlider) {
+        qualitySlider.addEventListener('input', function () {
+            qualityValue.textContent = qualitySlider.value;
+        });
+    }
+
+    // 获取当前压缩模式
+    function getCompressMode() {
+        var checked = document.querySelector('input[name="compressMode"]:checked');
+        return checked ? checked.value : 'none';
+    }
 
     // 上传区域点击
     uploadArea.addEventListener('click', function () {
@@ -114,6 +141,10 @@
         var formData = new FormData();
         formData.append('image', selectedFiles[0]);
         formData.append('instruction', instruction.value.trim());
+        formData.append('compress_mode', getCompressMode());
+        if (getCompressMode() === 'lossy') {
+            formData.append('quality', qualitySlider.value);
+        }
 
         fetch('/api/process-command', {
             method: 'POST',
@@ -149,6 +180,10 @@
         });
         formData.append('instruction', instruction.value.trim());
         formData.append('zip_output', 'true');
+        formData.append('compress_mode', getCompressMode());
+        if (getCompressMode() === 'lossy') {
+            formData.append('quality', qualitySlider.value);
+        }
 
         fetch('/api/batch-process-command', {
             method: 'POST',

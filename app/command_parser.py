@@ -252,6 +252,10 @@ def _parse_format_and_compress(text_lower: str, plan: Dict[str, Any]):
     if "target_kb" not in compress_info and size_match:
         compress_info["target_kb"] = int(size_match.group(1))
 
+    # 检测不压缩模式
+    if re.search(r'不压缩|原图质量|无压缩|no\s*compress|original\s*quality|lossless', text_lower):
+        compress_info["compress_mode"] = "none"
+
     # 质量参数
     quality_match = re.search(r'质量\s*(\d+)', text_lower)
     if not quality_match:
@@ -266,7 +270,7 @@ def _parse_format_and_compress(text_lower: str, plan: Dict[str, Any]):
         compress_info["quality"] = max(72, min(100, q))
 
     # 通用压缩关键词（不指定质量时，由 image_utils 根据输出格式选择默认质量）
-    if not compress_info and re.search(r'压缩|compress', text_lower):
+    if "compress_mode" not in compress_info and re.search(r'压缩|compress', text_lower):
         pass  # 不设置 quality，让 process_image 根据格式使用 WEBP_DEFAULT_QUALITY 或 JPEG_DEFAULT_QUALITY
 
     if compress_info:

@@ -337,25 +337,32 @@ def process_image(
 
             # 6. 压缩并保存
             compress_params = plan.get("compress", {})
-            quality = compress_params.get("quality", _get_default_quality(target_fmt))
-            target_kb = compress_params.get("target_kb", None)
+            compress_mode = compress_params.get("compress_mode", "lossy")
+            warning = None
+            warnings = []
 
             output_filename = generate_output_filename(original_filename, target_fmt)
             output_path = str(OUTPUT_DIR / output_filename)
 
-            warning = None
-            warnings = []
-            quality_used = quality
-            if target_kb is not None:
-                file_size, warning, quality_used = compress_to_target(
-                    img, output_path, target_fmt, target_kb, start_quality=quality
-                )
-                if warning:
-                    warnings.append(warning)
+            # 不压缩模式：仅格式转换，quality=100，不 resize
+            if compress_mode == "none":
+                quality_used = 100
+                file_size = save_image(img, output_path, target_fmt, quality_used)
             else:
-                file_size = save_image(img, output_path, target_fmt, quality)
+                quality = compress_params.get("quality", _get_default_quality(target_fmt))
+                target_kb = compress_params.get("target_kb", None)
+                quality_used = quality
+                if target_kb is not None:
+                    file_size, warning, quality_used = compress_to_target(
+                        img, output_path, target_fmt, target_kb, start_quality=quality
+                    )
+                    if warning:
+                        warnings.append(warning)
+                else:
+                    file_size = save_image(img, output_path, target_fmt, quality)
 
             file_size_kb = round(file_size / 1024, 2)
+            target_kb = compress_params.get("target_kb", None)
             size_target_reached = target_kb is None or file_size_kb <= target_kb
 
             # 7. 返回结果
@@ -372,6 +379,7 @@ def process_image(
                     "download_url": f"/download/{output_filename}",
                     "preview_url": f"/download/{output_filename}",
                     "quality_used": quality_used,
+                    "compress_mode": compress_mode,
                     "target_kb": target_kb,
                     "final_file_size_kb": file_size_kb,
                     "size_target_reached": size_target_reached,

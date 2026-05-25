@@ -448,3 +448,68 @@ h1 {
         justify-content: center;
     }
 }
+
+/* 压缩模式选项 */
+.compress-mode-section {
+    margin: 16px 0;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.compress-mode-section > label:first-child {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 14px;
+}
+
+.compress-mode-options {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 12px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.radio-option input[type="radio"] {
+    accent-color: #4f46e5;
+    width: 16px;
+    height: 16px;
+}
+
+.radio-label {
+    color: #444;
+}
+
+.quality-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.quality-section label {
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+}
+
+.quality-section input[type="range"] {
+    width: 100%;
+    margin-top: 8px;
+    accent-color: #4f46e5;
+}
+
+.quality-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+}

@@ -34,6 +34,8 @@ curl http://127.0.0.1:8000/health
 - 字段：
   - `image`：图片文件
   - `instruction`：处理指令（自然语言）
+  - `compress_mode`（可选）：`none` = 不压缩仅转换格式 / `lossy` = 开启压缩
+  - `quality`（可选）：压缩质量 72-100，仅 compress_mode=lossy 时生效
 
 ### curl 示例
 
@@ -43,6 +45,25 @@ curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "instruction=width 1000px, convert to WebP, compress under 300KB"
 ```
 
+### 不压缩模式（仅转换格式）
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/process-command" ^
+  -F "image=@D:\n8n-files\sample.png" ^
+  -F "instruction=convert to WebP" ^
+  -F "compress_mode=none"
+```
+
+### 压缩模式（指定质量）
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/process-command" ^
+  -F "image=@D:\n8n-files\sample.png" ^
+  -F "instruction=convert to WebP" ^
+  -F "compress_mode=lossy" ^
+  -F "quality=85"
+```
+
 ### n8n HTTP Request 节点配置
 
 | 配置项 | 值 |
@@ -50,7 +71,7 @@ curl -X POST "http://127.0.0.1:8000/api/process-command" ^
 | Method | POST |
 | URL | `http://127.0.0.1:8000/api/process-command` |
 | Body Content Type | Form Data |
-| Form Data Fields | `image` = 二进制文件 / `instruction` = 文本 |
+| Form Data Fields | `image` = 二进制文件 / `instruction` = 文本 / `compress_mode` = none 或 lossy（可选） / `quality` = 72-100（可选） |
 
 ### 返回示例
 
@@ -97,6 +118,7 @@ width 1000px, convert to WebP, compress under 300KB
 resize width to 800px, convert to JPG
 compress under 200KB
 crop to 1000x1000, convert to WebP
+convert to WebP, no compress（仅格式转换，不压缩）
 website product image
 ```
 
@@ -111,6 +133,8 @@ website product image
   - `images`：多个图片文件（同名字段）
   - `instruction`：处理指令
   - `zip_output`：`true` 或 `false`（默认 `true`）
+  - `compress_mode`（可选）：`none` 或 `lossy`
+  - `quality`（可选）：72-100
 
 ### curl 示例
 
@@ -177,9 +201,12 @@ curl -X POST "http://127.0.0.1:8000/api/batch-process-command" ^
   "output_dir": "D:\\n8n-files\\output",
   "instruction": "width 1000px, convert to WebP, compress under 300KB",
   "recursive": false,
-  "zip_output": true
+  "zip_output": true,
+  "compress_mode": "none"
 }
 ```
+
+- `compress_mode`（可选）：`none` = 不压缩仅转换格式 / `lossy` = 开启压缩
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -188,6 +215,8 @@ curl -X POST "http://127.0.0.1:8000/api/batch-process-command" ^
 | instruction | string | 是 | 处理指令 |
 | recursive | bool | 否 | 是否递归子文件夹（默认 false） |
 | zip_output | bool | 否 | 是否生成 ZIP（默认 true） |
+| compress_mode | string | 否 | `none`（不压缩）或 `lossy`（压缩） |
+| quality | int | 否 | 压缩质量 72-100，仅 lossy 时生效 |
 
 ### curl 示例
 
