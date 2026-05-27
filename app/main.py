@@ -108,8 +108,9 @@ async def process_command(
     if compress_mode in ("none", "lossy"):
         plan.setdefault("compress", {})["compress_mode"] = compress_mode
 
-    # API 参数覆盖 quality
-    if quality is not None and 72 <= quality <= 100:
+    # API 参数覆盖 quality（60-100，超出自动限制）
+    if quality is not None:
+        quality = max(60, min(100, quality))
         plan.setdefault("compress", {})["quality"] = quality
 
     # 保存上传文件到临时目录
@@ -161,8 +162,9 @@ async def batch_process_command(
     if compress_mode in ("none", "lossy"):
         plan.setdefault("compress", {})["compress_mode"] = compress_mode
 
-    # API 参数覆盖 quality
-    if quality is not None and 72 <= quality <= 100:
+    # API 参数覆盖 quality（60-100，超出自动限制）
+    if quality is not None:
+        quality = max(60, min(100, quality))
         plan.setdefault("compress", {})["quality"] = quality
 
     # 保存所有上传文件
@@ -208,6 +210,7 @@ class FolderProcessRequest(BaseModel):
     recursive: bool = False
     zip_output: bool = True
     compress_mode: Optional[str] = None
+    quality: Optional[int] = None
 
 
 @app.post("/api/batch-process-folder")
@@ -235,6 +238,11 @@ async def batch_process_folder(req: FolderProcessRequest):
     # API 参数覆盖 compress_mode
     if req.compress_mode in ("none", "lossy"):
         plan.setdefault("compress", {})["compress_mode"] = req.compress_mode
+
+    # API 参数覆盖 quality（60-100，超出自动限制）
+    if req.quality is not None:
+        quality = max(60, min(100, req.quality))
+        plan.setdefault("compress", {})["quality"] = quality
 
     # 收集图片文件
     if req.recursive:
@@ -343,14 +351,14 @@ async def docs_info():
         "supported_input_formats": sorted(list(SUPPORTED_INPUT_FORMATS)),
         "supported_output_formats": ["webp", "jpg", "png"],
         "compress_modes": {
-            "none": "No compression, format conversion only, quality=100 / 不压缩，仅格式转换，quality=100",
-            "lossy": "Enable compression with configurable quality / 开启压缩，可设置质量",
+            "none": "Original quality, format conversion only, quality=100 / 原图转换，不压缩，quality=100",
+            "lossy": "Enable compression with configurable quality (60-100, default 90) / 开启压缩，可设置质量（60-100，默认90）",
         },
         "endpoints": {
             "GET /health": "Health check / 健康检查",
             "POST /api/process-command": "Process single image / 单张图片处理 (multipart/form-data: image, instruction, compress_mode, quality)",
             "POST /api/batch-process-command": "Batch process uploaded images / 批量上传处理 (multipart/form-data: images[], instruction, zip_output, compress_mode, quality)",
-            "POST /api/batch-process-folder": "Batch process folder / 文件夹批量处理 (JSON: input_dir, output_dir, instruction, recursive, zip_output, compress_mode)",
+            "POST /api/batch-process-folder": "Batch process folder / 文件夹批量处理 (JSON: input_dir, output_dir, instruction, recursive, zip_output, compress_mode, quality)",
             "GET /download/{filename}": "Download processed file / 下载处理后的文件",
             "GET /api/docs-info": "This documentation / 本文档",
         },

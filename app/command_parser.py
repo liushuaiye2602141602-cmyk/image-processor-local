@@ -267,7 +267,7 @@ def _parse_format_and_compress(text_lower: str, plan: Dict[str, Any]):
 
     if quality_match:
         q = int(quality_match.group(1))
-        compress_info["quality"] = max(72, min(100, q))
+        compress_info["quality"] = max(60, min(100, q))
 
     # 通用压缩关键词（不指定质量时，由 image_utils 根据输出格式选择默认质量）
     if "compress_mode" not in compress_info and re.search(r'压缩|compress', text_lower):

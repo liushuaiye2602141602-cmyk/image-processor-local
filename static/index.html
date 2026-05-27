@@ -45,18 +45,27 @@
             <label>压缩模式 / Compress Mode</label>
             <div class="compress-mode-options">
                 <label class="radio-option">
-                    <input type="radio" name="compressMode" value="none" checked>
-                    <span class="radio-label">不压缩，仅转换格式（推荐）</span>
+                    <input type="radio" name="compressMode" value="none">
+                    <span class="radio-label">原图转换</span>
                 </label>
                 <label class="radio-option">
-                    <input type="radio" name="compressMode" value="lossy">
-                    <span class="radio-label">开启压缩</span>
+                    <input type="radio" name="compressMode" value="recommended" checked>
+                    <span class="radio-label">推荐压缩</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="compressMode" value="custom">
+                    <span class="radio-label">自定义压缩</span>
                 </label>
             </div>
+            <div class="compress-mode-desc" id="compressDesc">适合网站图片优化，清晰度优先（quality = 90）</div>
             <div class="quality-section" id="qualitySection" style="display:none;">
-                <label for="qualitySlider">压缩质量 / Quality: <span id="qualityValue">90</span></label>
-                <input type="range" id="qualitySlider" min="72" max="100" value="90" step="1">
-                <div class="quality-hint">质量越低文件越小，画质损失越大（最低 72）</div>
+                <label for="qualityInput">压缩比例 / Quality（60-100）</label>
+                <div class="quality-input-row">
+                    <input type="range" id="qualitySlider" min="60" max="100" value="90" step="1">
+                    <input type="number" id="qualityInput" min="60" max="100" value="90" class="quality-number">
+                    <span class="quality-percent">%</span>
+                </div>
+                <div class="quality-hint" id="qualityHint">推荐 90，低于 60 可能导致图片明显模糊</div>
             </div>
         </div>
 

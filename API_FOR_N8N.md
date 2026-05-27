@@ -35,23 +35,38 @@ curl http://127.0.0.1:8000/health
   - `image`：图片文件
   - `instruction`：处理指令（自然语言）
   - `compress_mode`（可选）：`none` = 不压缩仅转换格式 / `lossy` = 开启压缩
-  - `quality`（可选）：压缩质量 72-100，仅 compress_mode=lossy 时生效
+  - `quality`（可选）：压缩质量 60-100，仅 compress_mode=lossy 时生效，默认 90
+
+### 压缩模式说明
+
+| compress_mode | quality | 说明 |
+|---------------|---------|------|
+| `none` | 忽略 | 原图转换：不压缩，只做格式转换，quality = 100 |
+| `lossy` | 90（默认） | 推荐压缩：适合网站图片优化，清晰度优先 |
+| `lossy` | 60-100 | 自定义压缩：用户自定义 quality 值 |
 
 ### curl 示例
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/api/process-command" ^
-  -F "image=@D:\n8n-files\sample.png" ^
-  -F "instruction=width 1000px, convert to WebP, compress under 300KB"
-```
-
-### 不压缩模式（仅转换格式）
-
-```bash
+# 不压缩，仅转换格式（quality=100）
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\n8n-files\sample.png" ^
   -F "instruction=convert to WebP" ^
   -F "compress_mode=none"
+
+# 推荐压缩（quality=90）
+curl -X POST "http://127.0.0.1:8000/api/process-command" ^
+  -F "image=@D:\n8n-files\sample.png" ^
+  -F "instruction=convert to WebP" ^
+  -F "compress_mode=lossy" ^
+  -F "quality=90"
+
+# 自定义压缩比例（quality=80）
+curl -X POST "http://127.0.0.1:8000/api/process-command" ^
+  -F "image=@D:\n8n-files\sample.png" ^
+  -F "instruction=convert to WebP" ^
+  -F "compress_mode=lossy" ^
+  -F "quality=80"
 ```
 
 ### 压缩模式（指定质量）
@@ -71,7 +86,7 @@ curl -X POST "http://127.0.0.1:8000/api/process-command" ^
 | Method | POST |
 | URL | `http://127.0.0.1:8000/api/process-command` |
 | Body Content Type | Form Data |
-| Form Data Fields | `image` = 二进制文件 / `instruction` = 文本 / `compress_mode` = none 或 lossy（可选） / `quality` = 72-100（可选） |
+| Form Data Fields | `image` = 二进制文件 / `instruction` = 文本 / `compress_mode` = none 或 lossy（可选） / `quality` = 60-100（可选，默认 90） |
 
 ### 返回示例
 
@@ -216,7 +231,7 @@ curl -X POST "http://127.0.0.1:8000/api/batch-process-command" ^
 | recursive | bool | 否 | 是否递归子文件夹（默认 false） |
 | zip_output | bool | 否 | 是否生成 ZIP（默认 true） |
 | compress_mode | string | 否 | `none`（不压缩）或 `lossy`（压缩） |
-| quality | int | 否 | 压缩质量 72-100，仅 lossy 时生效 |
+| quality | int | 否 | 压缩质量 60-100（默认 90），仅 lossy 时生效 |
 
 ### curl 示例
 

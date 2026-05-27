@@ -20,14 +20,24 @@
     const resultBatch = document.getElementById('resultBatch');
     const qualitySection = document.getElementById('qualitySection');
     const qualitySlider = document.getElementById('qualitySlider');
-    const qualityValue = document.getElementById('qualityValue');
+    const qualityInput = document.getElementById('qualityInput');
+    const compressDesc = document.getElementById('compressDesc');
+    const qualityHint = document.getElementById('qualityHint');
 
     let selectedFiles = [];
+
+    // 压缩模式描述
+    var modeDescs = {
+        none: '不压缩，只做格式转换，quality = 100',
+        recommended: '适合网站图片优化，清晰度优先（quality = 90）',
+        custom: '拖动滑块或输入数值自定义压缩比例（60-100）'
+    };
 
     // 压缩模式切换
     document.querySelectorAll('input[name="compressMode"]').forEach(function (radio) {
         radio.addEventListener('change', function () {
-            if (radio.value === 'lossy') {
+            compressDesc.textContent = modeDescs[radio.value] || '';
+            if (radio.value === 'custom') {
                 qualitySection.style.display = 'block';
             } else {
                 qualitySection.style.display = 'none';
@@ -35,17 +45,67 @@
         });
     });
 
-    // 质量滑块实时显示
-    if (qualitySlider) {
+    // 滑块与输入框联动
+    if (qualitySlider && qualityInput) {
         qualitySlider.addEventListener('input', function () {
-            qualityValue.textContent = qualitySlider.value;
+            qualityInput.value = qualitySlider.value;
+            validateQuality(qualitySlider.value);
+        });
+        qualityInput.addEventListener('input', function () {
+            var val = parseInt(qualityInput.value, 10);
+            if (isNaN(val)) return;
+            val = Math.max(60, Math.min(100, val));
+            qualitySlider.value = val;
+            validateQuality(val);
+        });
+        qualityInput.addEventListener('blur', function () {
+            var val = parseInt(qualityInput.value, 10);
+            if (isNaN(val) || val < 60) {
+                qualityInput.value = 90;
+                qualitySlider.value = 90;
+                validateQuality(90);
+            } else if (val > 100) {
+                qualityInput.value = 100;
+                qualitySlider.value = 100;
+                validateQuality(100);
+            }
         });
     }
 
-    // 获取当前压缩模式
+    // 质量验证提示
+    function validateQuality(val) {
+        if (val < 60) {
+            qualityHint.textContent = '⚠️ 低于 60 可能导致图片明显模糊！';
+            qualityHint.style.color = '#e53e3e';
+        } else if (val < 72) {
+            qualityHint.textContent = '⚠️ 较低质量，画质损失较明显';
+            qualityHint.style.color = '#dd6b20';
+        } else {
+            qualityHint.textContent = '推荐 90，低于 60 可能导致图片明显模糊';
+            qualityHint.style.color = '#888';
+        }
+    }
+
+    // 获取当前压缩模式和参数
     function getCompressMode() {
         var checked = document.querySelector('input[name="compressMode"]:checked');
-        return checked ? checked.value : 'none';
+        return checked ? checked.value : 'recommended';
+    }
+
+    // 获取最终发送给后端的 compress_mode 和 quality
+    function getCompressParams() {
+        var mode = getCompressMode();
+        if (mode === 'none') {
+            return { compress_mode: 'none' };
+        }
+        if (mode === 'recommended') {
+            return { compress_mode: 'lossy', quality: 90 };
+        }
+        // custom
+        var q = parseInt(qualityInput.value, 10);
+        if (isNaN(q) || q < 60) q = 90;
+        if (q > 100) q = 100;
+        return { compress_mode: 'lossy', quality: q };
     }
 
     // 上传区域点击
@@ -141,9 +201,10 @@
         var formData = new FormData();
         formData.append('image', selectedFiles[0]);
         formData.append('instruction', instruction.value.trim());
-        formData.append('compress_mode', getCompressMode());
-        if (getCompressMode() === 'lossy') {
-            formData.append('quality', qualitySlider.value);
+        var params = getCompressParams();
+        formData.append('compress_mode', params.compress_mode);
+        if (params.quality !== undefined) {
+            formData.append('quality', params.quality);
         }
 
         fetch('/api/process-command', {
@@ -180,9 +241,10 @@
         });
         formData.append('instruction', instruction.value.trim());
         formData.append('zip_output', 'true');
-        formData.append('compress_mode', getCompressMode());
-        if (getCompressMode() === 'lossy') {
-            formData.append('quality', qualitySlider.value);
+        var params = getCompressParams();
+        formData.append('compress_mode', params.compress_mode);
+        if (params.quality !== undefined) {
+            formData.append('quality', params.quality);
         }
 
         fetch('/api/batch-process-command', {
