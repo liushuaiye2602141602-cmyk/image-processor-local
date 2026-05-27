@@ -33,17 +33,23 @@
         custom: '手动设置图片质量，默认 90，范围 60-100。'
     };
 
+    // 模式切换核心函数
+    function switchMode(mode) {
+        compressDesc.textContent = modeDescs[mode] || '';
+        if (mode === 'custom') {
+            qualitySection.style.display = 'block';
+        } else {
+            qualitySection.style.display = 'none';
+        }
+    }
+
     // 压缩模式切换
-    document.querySelectorAll('input[name="compressMode"]').forEach(function (radio) {
-        radio.addEventListener('change', function () {
-            compressDesc.textContent = modeDescs[radio.value] || '';
-            if (radio.value === 'custom') {
-                qualitySection.style.display = 'block';
-            } else {
-                qualitySection.style.display = 'none';
-            }
+    var radios = document.querySelectorAll('input[name="compressMode"]');
+    for (var i = 0; i < radios.length; i++) {
+        radios[i].addEventListener('change', function () {
+            switchMode(this.value);
         });
-    });
+    }
 
     // 滑块与输入框联动
     if (qualitySlider && qualityInput) {
@@ -101,20 +107,20 @@
         return checked ? checked.value : 'recommended';
     }
 
-    // 获取最终发送给后端的 compress_mode 和 quality
+    // 获取最终发送给后端的 mode 和 quality
     function getCompressParams() {
         var mode = getCompressMode();
         if (mode === 'none') {
-            return { compress_mode: 'none' };
+            return { mode: 'original' };
         }
         if (mode === 'recommended') {
-            return { compress_mode: 'lossy', quality: 90 };
+            return { mode: 'recommended' };
         }
         // custom
         var q = parseInt(qualityInput.value, 10);
         if (isNaN(q) || q < 60) q = 90;
         if (q > 100) q = 100;
-        return { compress_mode: 'lossy', quality: q };
+        return { mode: 'custom', quality: q };
     }
 
     // 上传区域点击
@@ -179,6 +185,15 @@
     document.querySelectorAll('.btn-preset').forEach(function (btn) {
         btn.addEventListener('click', function () {
             instruction.value = btn.getAttribute('data-text');
+            // 自动切换处理模式
+            var presetMode = btn.getAttribute('data-mode');
+            if (presetMode) {
+                var targetRadio = document.querySelector('input[name="compressMode"][value="' + presetMode + '"]');
+                if (targetRadio) {
+                    targetRadio.checked = true;
+                    switchMode(presetMode);
+                }
+            }
         });
     });
 
@@ -211,7 +226,7 @@
         formData.append('image', selectedFiles[0]);
         formData.append('instruction', instruction.value.trim());
         var params = getCompressParams();
-        formData.append('compress_mode', params.compress_mode);
+        formData.append('mode', params.mode);
         if (params.quality !== undefined) {
             formData.append('quality', params.quality);
         }
@@ -251,7 +266,7 @@
         formData.append('instruction', instruction.value.trim());
         formData.append('zip_output', 'true');
         var params = getCompressParams();
-        formData.append('compress_mode', params.compress_mode);
+        formData.append('mode', params.mode);
         if (params.quality !== undefined) {
             formData.append('quality', params.quality);
         }
