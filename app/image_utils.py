@@ -49,6 +49,23 @@ def _get_min_quality(target_format: str) -> int:
     return MIN_QUALITY
 
 
+# 格式映射：内部格式名 → Pillow save format
+_SAVE_FORMAT_MAP = {
+    "jpg": "JPEG",
+    "jpeg": "JPEG",
+    "png": "PNG",
+    "webp": "WEBP",
+    "bmp": "BMP",
+    "tif": "TIFF",
+    "tiff": "TIFF",
+}
+
+
+def _to_save_format(target_format: str) -> str:
+    """将任意格式名标准化为 Pillow save format（如 'jpg' → 'JPEG'）"""
+    return _SAVE_FORMAT_MAP.get(target_format.lower(), target_format.upper())
+
+
 def get_image_info(img: Image.Image, file_size_bytes: int) -> Dict[str, Any]:
     """获取图片基本信息"""
     return {
@@ -218,20 +235,20 @@ def save_image(
     quality: int = 90,
 ) -> int:
     """保存图片，返回文件大小（字节）"""
-    target_format = target_format.lower()
-    if target_format == "jpeg":
-        target_format = "jpg"
+    fmt = target_format.lower()
+    if fmt == "jpeg":
+        fmt = "jpg"
 
     save_params = {}
 
-    if target_format == "jpg":
+    if fmt == "jpg":
         save_params = {"quality": quality, "optimize": True}
-    elif target_format == "webp":
+    elif fmt == "webp":
         save_params = {"quality": quality, "method": 4}
-    elif target_format == "png":
+    elif fmt == "png":
         save_params = {"optimize": True}
 
-    img.save(output_path, format=target_format.upper(), **save_params)
+    img.save(output_path, format=_to_save_format(fmt), **save_params)
     return os.path.getsize(output_path)
 
 
@@ -377,7 +394,7 @@ def process_image(
                 "original": original_info,
                 "processed": {
                     "filename": output_filename,
-                    "format": target_fmt.upper(),
+                    "format": _to_save_format(target_fmt),
                     "width": img.width,
                     "height": img.height,
                     "file_size_kb": file_size_kb,
