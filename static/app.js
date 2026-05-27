@@ -26,11 +26,11 @@
 
     let selectedFiles = [];
 
-    // 压缩模式描述
+    // 模式描述
     var modeDescs = {
-        none: '不压缩，只做格式转换，quality = 100',
-        recommended: '适合网站图片优化，清晰度优先（quality = 90）',
-        custom: '拖动滑块或输入数值自定义压缩比例（60-100）'
+        none: '不压缩，只转换格式，适合产品图、Banner、详情页图片。',
+        recommended: '默认压缩质量 90，适合独立站网站图片优化。',
+        custom: '手动设置图片质量，默认 90，范围 60-100。'
     };
 
     // 压缩模式切换
@@ -75,13 +75,22 @@
     // 质量验证提示
     function validateQuality(val) {
         if (val < 60) {
-            qualityHint.textContent = '⚠️ 低于 60 可能导致图片明显模糊！';
+            qualityHint.textContent = '⚠️ 低于 60 可能导致图片明显模糊！不推荐用于产品图或独立站主图。';
             qualityHint.style.color = '#e53e3e';
-        } else if (val < 72) {
-            qualityHint.textContent = '⚠️ 较低质量，画质损失较明显';
+        } else if (val < 70) {
+            qualityHint.textContent = '⚠️ 70 以下可能导致明显模糊，不推荐用于产品图。';
             qualityHint.style.color = '#dd6b20';
+        } else if (val < 80) {
+            qualityHint.textContent = '中等压缩，文件更小，但可能略有损失。';
+            qualityHint.style.color = '#888';
+        } else if (val < 90) {
+            qualityHint.textContent = '清晰度尚可，适合一般用途。';
+            qualityHint.style.color = '#888';
+        } else if (val === 90) {
+            qualityHint.textContent = '推荐，清晰度优先，适合网站图片优化。';
+            qualityHint.style.color = '#38a169';
         } else {
-            qualityHint.textContent = '推荐 90，低于 60 可能导致图片明显模糊';
+            qualityHint.textContent = '接近原图质量，文件可能较大。';
             qualityHint.style.color = '#888';
         }
     }

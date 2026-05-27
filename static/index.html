@@ -40,16 +40,16 @@
             <input type="text" id="instruction" placeholder="例如：宽度1000px，转成WebP，压缩到300KB以内">
         </div>
 
-        <!-- 压缩模式 -->
+        <!-- 处理模式 -->
         <div class="compress-mode-section">
-            <label>压缩模式 / Compress Mode</label>
+            <label>处理模式 / Processing Mode</label>
             <div class="compress-mode-options">
                 <label class="radio-option">
-                    <input type="radio" name="compressMode" value="none">
+                    <input type="radio" name="compressMode" value="none" checked>
                     <span class="radio-label">原图转换</span>
                 </label>
                 <label class="radio-option">
-                    <input type="radio" name="compressMode" value="recommended" checked>
+                    <input type="radio" name="compressMode" value="recommended">
                     <span class="radio-label">推荐压缩</span>
                 </label>
                 <label class="radio-option">
@@ -57,13 +57,18 @@
                     <span class="radio-label">自定义压缩</span>
                 </label>
             </div>
-            <div class="compress-mode-desc" id="compressDesc">适合网站图片优化，清晰度优先（quality = 90）</div>
+            <div class="compress-mode-desc" id="compressDesc">不压缩，只转换格式，适合产品图、Banner、详情页图片。</div>
             <div class="quality-section" id="qualitySection" style="display:none;">
-                <label for="qualityInput">压缩比例 / Quality（60-100）</label>
+                <label for="qualityInput">压缩质量 / Quality（60-100）</label>
                 <div class="quality-input-row">
                     <input type="range" id="qualitySlider" min="60" max="100" value="90" step="1">
                     <input type="number" id="qualityInput" min="60" max="100" value="90" class="quality-number">
-                    <span class="quality-percent">%</span>
+                </div>
+                <div class="quality-scale">
+                    <span>100 = 接近原图</span>
+                    <span>90 = 推荐</span>
+                    <span>80 = 中等</span>
+                    <span>70以下 = 不推荐</span>
                 </div>
                 <div class="quality-hint" id="qualityHint">推荐 90，低于 60 可能导致图片明显模糊</div>
             </div>

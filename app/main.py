@@ -65,7 +65,8 @@ async def process_command(
     image: UploadFile = File(...),
     instruction: str = Form(...),
     compress_mode: Optional[str] = Form(None),
-    quality: Optional[int] = Form(None),
+    quality: Optional[str] = Form(None),
+    mode: Optional[str] = Form(None),
 ):
     """处理单张图片"""
     # 检查文件格式
@@ -104,14 +105,32 @@ async def process_command(
             "suggestion": "Please check the instruction format / 请检查指令格式",
         })
 
+    # 解析 quality（支持非法输入自动回退到 90）
+    quality_int = None
+    if quality is not None:
+        try:
+            quality_int = int(quality)
+        except (ValueError, TypeError):
+            quality_int = 90  # 非法输入自动使用 90
+
+    # mode 参数映射（mode 优先级高于 compress_mode）
+    if mode == "original":
+        compress_mode = "none"
+    elif mode == "recommended":
+        compress_mode = "lossy"
+        if quality_int is None:
+            quality_int = 90
+    elif mode == "custom":
+        compress_mode = "lossy"
+
     # API 参数覆盖 compress_mode
     if compress_mode in ("none", "lossy"):
         plan.setdefault("compress", {})["compress_mode"] = compress_mode
 
     # API 参数覆盖 quality（60-100，超出自动限制）
-    if quality is not None:
-        quality = max(60, min(100, quality))
-        plan.setdefault("compress", {})["quality"] = quality
+    if quality_int is not None:
+        quality_int = max(60, min(100, quality_int))
+        plan.setdefault("compress", {})["quality"] = quality_int
 
     # 保存上传文件到临时目录
     temp_path = str(UPLOAD_DIR / f"temp_{image.filename}")
@@ -136,7 +155,8 @@ async def batch_process_command(
     instruction: str = Form(...),
     zip_output: bool = Form(True),
     compress_mode: Optional[str] = Form(None),
-    quality: Optional[int] = Form(None),
+    quality: Optional[str] = Form(None),
+    mode: Optional[str] = Form(None),
 ):
     """批量处理多张图片"""
     # 检查指令
@@ -158,14 +178,32 @@ async def batch_process_command(
             "suggestion": "Please check the instruction format / 请检查指令格式",
         })
 
+    # 解析 quality（支持非法输入自动回退到 90）
+    quality_int = None
+    if quality is not None:
+        try:
+            quality_int = int(quality)
+        except (ValueError, TypeError):
+            quality_int = 90
+
+    # mode 参数映射（mode 优先级高于 compress_mode）
+    if mode == "original":
+        compress_mode = "none"
+    elif mode == "recommended":
+        compress_mode = "lossy"
+        if quality_int is None:
+            quality_int = 90
+    elif mode == "custom":
+        compress_mode = "lossy"
+
     # API 参数覆盖 compress_mode
     if compress_mode in ("none", "lossy"):
         plan.setdefault("compress", {})["compress_mode"] = compress_mode
 
     # API 参数覆盖 quality（60-100，超出自动限制）
-    if quality is not None:
-        quality = max(60, min(100, quality))
-        plan.setdefault("compress", {})["quality"] = quality
+    if quality_int is not None:
+        quality_int = max(60, min(100, quality_int))
+        plan.setdefault("compress", {})["quality"] = quality_int
 
     # 保存所有上传文件
     temp_paths = []
@@ -210,7 +248,8 @@ class FolderProcessRequest(BaseModel):
     recursive: bool = False
     zip_output: bool = True
     compress_mode: Optional[str] = None
-    quality: Optional[int] = None
+    quality: Optional[str] = None
+    mode: Optional[str] = None
 
 
 @app.post("/api/batch-process-folder")
@@ -235,14 +274,33 @@ async def batch_process_folder(req: FolderProcessRequest):
             "suggestion": "Please check the instruction format / 请检查指令格式",
         })
 
+    # 解析 quality
+    quality_int = None
+    if req.quality is not None:
+        try:
+            quality_int = int(req.quality)
+        except (ValueError, TypeError):
+            quality_int = 90
+
+    # mode 参数映射（mode 优先级高于 compress_mode）
+    compress_mode = req.compress_mode
+    if req.mode == "original":
+        compress_mode = "none"
+    elif req.mode == "recommended":
+        compress_mode = "lossy"
+        if quality_int is None:
+            quality_int = 90
+    elif req.mode == "custom":
+        compress_mode = "lossy"
+
     # API 参数覆盖 compress_mode
-    if req.compress_mode in ("none", "lossy"):
-        plan.setdefault("compress", {})["compress_mode"] = req.compress_mode
+    if compress_mode in ("none", "lossy"):
+        plan.setdefault("compress", {})["compress_mode"] = compress_mode
 
     # API 参数覆盖 quality（60-100，超出自动限制）
-    if req.quality is not None:
-        quality = max(60, min(100, req.quality))
-        plan.setdefault("compress", {})["quality"] = quality
+    if quality_int is not None:
+        quality_int = max(60, min(100, quality_int))
+        plan.setdefault("compress", {})["quality"] = quality_int
 
     # 收集图片文件
     if req.recursive:
@@ -350,15 +408,20 @@ async def docs_info():
         "description": "Local image format conversion, resize, crop and compression tool / 本地图片格式转换、缩放、裁剪和压缩工具",
         "supported_input_formats": sorted(list(SUPPORTED_INPUT_FORMATS)),
         "supported_output_formats": ["webp", "jpg", "png"],
+        "modes": {
+            "original": "No compression, format conversion only, quality=100, no resize / 原图转换，不压缩，quality=100，不改尺寸",
+            "recommended": "Compress with quality=90, best for web / 推荐压缩，quality=90，适合网站图片优化",
+            "custom": "User-defined quality (60-100) / 自定义压缩，用户设置质量（60-100）",
+        },
         "compress_modes": {
-            "none": "Original quality, format conversion only, quality=100 / 原图转换，不压缩，quality=100",
+            "none": "Same as mode=original / 等同于 mode=original",
             "lossy": "Enable compression with configurable quality (60-100, default 90) / 开启压缩，可设置质量（60-100，默认90）",
         },
         "endpoints": {
             "GET /health": "Health check / 健康检查",
-            "POST /api/process-command": "Process single image / 单张图片处理 (multipart/form-data: image, instruction, compress_mode, quality)",
-            "POST /api/batch-process-command": "Batch process uploaded images / 批量上传处理 (multipart/form-data: images[], instruction, zip_output, compress_mode, quality)",
-            "POST /api/batch-process-folder": "Batch process folder / 文件夹批量处理 (JSON: input_dir, output_dir, instruction, recursive, zip_output, compress_mode, quality)",
+            "POST /api/process-command": "Process single image / 单张图片处理 (multipart/form-data: image, instruction, mode, compress_mode, quality)",
+            "POST /api/batch-process-command": "Batch process uploaded images / 批量上传处理 (multipart/form-data: images[], instruction, zip_output, mode, compress_mode, quality)",
+            "POST /api/batch-process-folder": "Batch process folder / 文件夹批量处理 (JSON: input_dir, output_dir, instruction, recursive, zip_output, mode, compress_mode, quality)",
             "GET /download/{filename}": "Download processed file / 下载处理后的文件",
             "GET /api/docs-info": "This documentation / 本文档",
         },
@@ -372,10 +435,12 @@ async def docs_info():
         ],
         "example_curl": {
             "health": 'curl http://127.0.0.1:8000/health',
-            "single_no_compress": 'curl -X POST "http://127.0.0.1:8000/api/process-command" -F "image=@sample.png" -F "instruction=convert to WebP" -F "compress_mode=none"',
-            "single_compress": 'curl -X POST "http://127.0.0.1:8000/api/process-command" -F "image=@sample.png" -F "instruction=convert to WebP" -F "compress_mode=lossy" -F "quality=90"',
-            "batch": 'curl -X POST "http://127.0.0.1:8000/api/batch-process-command" -F "images=@a.png" -F "images=@b.jpg" -F "instruction=转成WebP" -F "zip_output=true"',
-            "folder": 'curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" -H "Content-Type: application/json" -d \'{"input_dir":"D:/input","instruction":"convert to WebP","compress_mode":"none"}\'',
+            "original_mode": 'curl -X POST "http://127.0.0.1:8000/api/process-command" -F "image=@sample.png" -F "instruction=convert to WebP" -F "mode=original"',
+            "recommended_mode": 'curl -X POST "http://127.0.0.1:8000/api/process-command" -F "image=@sample.png" -F "instruction=convert to WebP" -F "mode=recommended"',
+            "custom_mode": 'curl -X POST "http://127.0.0.1:8000/api/process-command" -F "image=@sample.png" -F "instruction=convert to WebP" -F "mode=custom" -F "quality=80"',
+            "legacy_compress_mode_none": 'curl -X POST "http://127.0.0.1:8000/api/process-command" -F "image=@sample.png" -F "instruction=convert to WebP" -F "compress_mode=none"',
+            "batch": 'curl -X POST "http://127.0.0.1:8000/api/batch-process-command" -F "images=@a.png" -F "images=@b.jpg" -F "instruction=转成WebP" -F "mode=recommended" -F "zip_output=true"',
+            "folder": 'curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" -H "Content-Type: application/json" -d \'{"input_dir":"D:/input","instruction":"convert to WebP","mode":"original"}\'',
         },
     }
 

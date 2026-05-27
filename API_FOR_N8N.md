@@ -4,6 +4,20 @@
 
 ---
 
+## 处理模式
+
+所有 API 接口支持 `mode` 参数，用于指定图片处理模式：
+
+| mode | 说明 | quality | 适用场景 |
+|------|------|---------|----------|
+| `original` | 原图转换：不压缩，不改尺寸，只转换格式 | 100（固定） | 产品图、Banner、详情页、独立站高清图 |
+| `recommended` | 推荐压缩：清晰度优先，适当减小体积 | 90（默认） | 独立站网站图片优化 |
+| `custom` | 自定义压缩：用户手动设置 quality | 60-100（用户指定） | 灵活控制体积和清晰度 |
+
+> **quality 说明**：quality 不是"文件压缩百分比"，而是图片编码质量参数。quality 越高越清晰，文件可能越大。低于 70 可能导致明显模糊，不推荐用于产品图或独立站主图。
+
+---
+
 ## 1. 健康检查
 
 **GET** `/health`
@@ -34,46 +48,45 @@ curl http://127.0.0.1:8000/health
 - 字段：
   - `image`：图片文件
   - `instruction`：处理指令（自然语言）
-  - `compress_mode`（可选）：`none` = 不压缩仅转换格式 / `lossy` = 开启压缩
-  - `quality`（可选）：压缩质量 60-100，仅 compress_mode=lossy 时生效，默认 90
-
-### 压缩模式说明
-
-| compress_mode | quality | 说明 |
-|---------------|---------|------|
-| `none` | 忽略 | 原图转换：不压缩，只做格式转换，quality = 100 |
-| `lossy` | 90（默认） | 推荐压缩：适合网站图片优化，清晰度优先 |
-| `lossy` | 60-100 | 自定义压缩：用户自定义 quality 值 |
+  - `mode`（推荐）：`original` / `recommended` / `custom`
+  - `compress_mode`（可选，兼容旧版）：`none` = 原图转换 / `lossy` = 开启压缩
+  - `quality`（可选）：压缩质量 60-100，默认 90，仅 compress 时生效
 
 ### curl 示例
 
 ```bash
-# 不压缩，仅转换格式（quality=100）
+# 原图转换（不压缩，quality=100，不改尺寸）
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\n8n-files\sample.png" ^
   -F "instruction=convert to WebP" ^
-  -F "compress_mode=none"
+  -F "mode=original"
 
 # 推荐压缩（quality=90）
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\n8n-files\sample.png" ^
   -F "instruction=convert to WebP" ^
-  -F "compress_mode=lossy" ^
-  -F "quality=90"
+  -F "mode=recommended"
 
-# 自定义压缩比例（quality=80）
+# 自定义压缩质量（quality=80）
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\n8n-files\sample.png" ^
   -F "instruction=convert to WebP" ^
-  -F "compress_mode=lossy" ^
+  -F "mode=custom" ^
   -F "quality=80"
 ```
 
-### 压缩模式（指定质量）
+### 兼容旧版 compress_mode 参数
 
 ```bash
+# 等同于 mode=original
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
-  -F "image=@D:\n8n-files\sample.png" ^
+  -F "image=@sample.png" ^
+  -F "instruction=convert to WebP" ^
+  -F "compress_mode=none"
+
+# 等同于 mode=recommended
+curl -X POST "http://127.0.0.1:8000/api/process-command" ^
+  -F "image=@sample.png" ^
   -F "instruction=convert to WebP" ^
   -F "compress_mode=lossy" ^
   -F "quality=90"
@@ -86,7 +99,7 @@ curl -X POST "http://127.0.0.1:8000/api/process-command" ^
 | Method | POST |
 | URL | `http://127.0.0.1:8000/api/process-command` |
 | Body Content Type | Form Data |
-| Form Data Fields | `image` = 二进制文件 / `instruction` = 文本 / `compress_mode` = none 或 lossy（可选） / `quality` = 60-100（可选，默认 90） |
+| Form Data Fields | `image` = 二进制文件 / `instruction` = 文本 / `mode` = original 或 recommended 或 custom / `quality` = 60-100（可选，默认 90） |
 
 ### 返回示例
 
@@ -105,36 +118,35 @@ curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   "processed": {
     "filename": "sample-1779271590493-abcd.webp",
     "format": "WEBP",
-    "width": 1000,
-    "height": 750,
-    "file_size_kb": 45.2,
+    "width": 2000,
+    "height": 1500,
+    "file_size_kb": 480.3,
     "download_url": "/download/sample-1779271590493-abcd.webp",
     "preview_url": "/download/sample-1779271590493-abcd.webp",
-    "quality_used": 90,
-    "target_kb": 300,
-    "final_file_size_kb": 45.2,
+    "quality_used": 100,
+    "compress_mode": "none",
+    "target_kb": null,
+    "final_file_size_kb": 480.3,
     "size_target_reached": true,
     "warnings": []
   },
   "operation_plan": {
-    "resize": { "mode": "width", "width": 1000 },
+    "resize": {},
     "crop": {},
     "convert": { "format": "webp" },
-    "compress": { "target_kb": 300 }
-  },
-  "warnings": []
+    "compress": { "compress_mode": "none" }
+  }
 }
 ```
 
 ### 常用指令示例
 
 ```
-width 1000px, convert to WebP, compress under 300KB
-resize width to 800px, convert to JPG
-compress under 200KB
-crop to 1000x1000, convert to WebP
-convert to WebP, no compress（仅格式转换，不压缩）
-website product image
+convert to WebP                    # 转成 WebP
+width 1000px, convert to WebP      # 宽度 1000，转 WebP
+compress under 300KB               # 压缩到 300KB 以内
+crop to 1000x1000, convert to WebP # 裁剪 1000x1000，转 WebP
+website product image              # 独立站产品主图预设
 ```
 
 ---
@@ -148,16 +160,27 @@ website product image
   - `images`：多个图片文件（同名字段）
   - `instruction`：处理指令
   - `zip_output`：`true` 或 `false`（默认 `true`）
-  - `compress_mode`（可选）：`none` 或 `lossy`
-  - `quality`（可选）：72-100
+  - `mode`（推荐）：`original` / `recommended` / `custom`
+  - `compress_mode`（可选，兼容旧版）：`none` 或 `lossy`
+  - `quality`（可选）：60-100，默认 90
 
 ### curl 示例
 
 ```bash
+# 推荐压缩批量处理
 curl -X POST "http://127.0.0.1:8000/api/batch-process-command" ^
   -F "images=@D:\n8n-files\sample1.png" ^
   -F "images=@D:\n8n-files\sample2.jpg" ^
   -F "instruction=width 1000px, convert to WebP" ^
+  -F "mode=recommended" ^
+  -F "zip_output=true"
+
+# 原图转换批量处理
+curl -X POST "http://127.0.0.1:8000/api/batch-process-command" ^
+  -F "images=@D:\n8n-files\sample1.png" ^
+  -F "images=@D:\n8n-files\sample2.jpg" ^
+  -F "instruction=convert to WebP" ^
+  -F "mode=original" ^
   -F "zip_output=true"
 ```
 
@@ -168,36 +191,7 @@ curl -X POST "http://127.0.0.1:8000/api/batch-process-command" ^
 | Method | POST |
 | URL | `http://127.0.0.1:8000/api/batch-process-command` |
 | Body Content Type | Form Data |
-| Form Data Fields | `images` = 多个二进制文件 / `instruction` = 文本 / `zip_output` = true |
-
-### 返回示例
-
-```json
-{
-  "success": true,
-  "tool": "batch_process_command",
-  "message": "Batch image processing completed / 批量图片处理完成",
-  "total_files": 2,
-  "success_count": 2,
-  "failed_count": 0,
-  "results": [
-    {
-      "success": true,
-      "original_filename": "sample1.png",
-      "output_filename": "sample1-1779271590493-abcd.webp",
-      "final_format": "WEBP",
-      "final_width": 1000,
-      "final_height": 750,
-      "final_file_size_kb": 45.2,
-      "download_url": "/download/sample1-1779271590493-abcd.webp",
-      "preview_url": "/download/sample1-1779271590493-abcd.webp"
-    }
-  ],
-  "failed_results": [],
-  "zip_filename": "batch-processed-1779271590500.zip",
-  "zip_download_url": "/download/batch-processed-1779271590500.zip"
-}
-```
+| Form Data Fields | `images` = 多个二进制文件 / `instruction` = 文本 / `mode` = original 或 recommended / `zip_output` = true |
 
 ---
 
@@ -214,31 +208,41 @@ curl -X POST "http://127.0.0.1:8000/api/batch-process-command" ^
 {
   "input_dir": "D:\\n8n-files\\input",
   "output_dir": "D:\\n8n-files\\output",
-  "instruction": "width 1000px, convert to WebP, compress under 300KB",
+  "instruction": "convert to WebP",
+  "mode": "original",
   "recursive": false,
-  "zip_output": true,
-  "compress_mode": "none"
+  "zip_output": true
 }
 ```
-
-- `compress_mode`（可选）：`none` = 不压缩仅转换格式 / `lossy` = 开启压缩
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | input_dir | string | 是 | 输入文件夹路径 |
 | output_dir | string | 否 | 输出文件夹（默认 outputs/） |
 | instruction | string | 是 | 处理指令 |
+| mode | string | 否 | `original`（原图转换）/ `recommended`（推荐压缩）/ `custom`（自定义） |
+| compress_mode | string | 否 | 兼容旧版：`none` 或 `lossy` |
+| quality | int | 否 | 压缩质量 60-100（默认 90），仅 compress 时生效 |
 | recursive | bool | 否 | 是否递归子文件夹（默认 false） |
 | zip_output | bool | 否 | 是否生成 ZIP（默认 true） |
-| compress_mode | string | 否 | `none`（不压缩）或 `lossy`（压缩） |
-| quality | int | 否 | 压缩质量 60-100（默认 90），仅 lossy 时生效 |
 
 ### curl 示例
 
 ```bash
+# 原图转换
 curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" ^
   -H "Content-Type: application/json" ^
-  -d "{\"input_dir\":\"D:\\n8n-files\\input\",\"instruction\":\"width 1000px, convert to WebP\",\"recursive\":false,\"zip_output\":true}"
+  -d "{\"input_dir\":\"D:\\n8n-files\\input\",\"instruction\":\"convert to WebP\",\"mode\":\"original\"}"
+
+# 推荐压缩
+curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"input_dir\":\"D:\\n8n-files\\input\",\"instruction\":\"convert to WebP\",\"mode\":\"recommended\"}"
+
+# 自定义压缩质量
+curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"input_dir\":\"D:\\n8n-files\\input\",\"instruction\":\"convert to WebP\",\"mode\":\"custom\",\"quality\":80}"
 ```
 
 ### n8n HTTP Request 节点配置
@@ -249,25 +253,6 @@ curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" ^
 | URL | `http://127.0.0.1:8000/api/batch-process-folder` |
 | Body Content Type | JSON |
 | JSON Body | 见上方请求体示例 |
-
-### 返回示例
-
-```json
-{
-  "success": true,
-  "tool": "batch_process_folder",
-  "message": "Batch folder processing completed / 文件夹批量处理完成",
-  "input_dir": "D:\\n8n-files\\input",
-  "output_dir": "D:\\n8n-files\\output",
-  "total_files": 10,
-  "success_count": 10,
-  "failed_count": 0,
-  "results": [...],
-  "failed_results": [],
-  "zip_filename": "batch-processed-1779271590500.zip",
-  "zip_download_url": "/download/batch-processed-1779271590500.zip"
-}
-```
 
 ---
 
@@ -280,9 +265,6 @@ curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" ^
 ```
 http://127.0.0.1:8000/download/sample-1779271590493-abcd.webp
 ```
-
-- 返回文件流，可直接在浏览器打开或下载
-- 文件不存在返回 404
 
 ---
 
@@ -328,7 +310,7 @@ http://127.0.0.1:8000/download/sample-1779271590493-abcd.webp
 ### 场景 1：监控文件夹自动处理
 
 1. **Trigger**：Schedule Trigger（定时）或 On File Change（文件变化）
-2. **HTTP Request**：调用 `/api/batch-process-folder`
+2. **HTTP Request**：调用 `/api/batch-process-folder`，`mode=original`
 3. **IF**：检查 `success` 字段
 4. **后续节点**：发送通知、移动文件等
 
@@ -336,7 +318,7 @@ http://127.0.0.1:8000/download/sample-1779271590493-abcd.webp
 
 1. **Webhook**：接收图片 URL 或文件
 2. **HTTP Request**：下载图片到本地
-3. **HTTP Request**：调用 `/api/process-command`
+3. **HTTP Request**：调用 `/api/process-command`，`mode=recommended`
 4. **Response**：返回处理结果
 
 ### 场景 3：批量压缩产品图
@@ -344,5 +326,6 @@ http://127.0.0.1:8000/download/sample-1779271590493-abcd.webp
 1. **HTTP Request**：调用 `/api/batch-process-folder`
    - input_dir: 产品图源文件夹
    - instruction: `website product image`
+   - mode: `recommended`
 2. **HTTP Request**：调用下载链接获取 ZIP
 3. **后续节点**：上传到 CDN 或发送邮件

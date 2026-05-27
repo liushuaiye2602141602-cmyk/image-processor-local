@@ -45,22 +45,24 @@
 
 1. 拖拽或点击上传图片（支持多张）
 2. 输入处理指令
-3. 选择压缩模式
+3. 选择处理模式
 4. 点击「开始处理」
 5. 查看结果，下载处理后的图片
 
-### 压缩模式
+### 处理模式
 
-| 模式 | 说明 | quality |
-|------|------|---------|
-| 原图转换 | 不压缩，只做格式转换 | 100 |
-| 推荐压缩 | 适合网站图片优化，清晰度优先（默认） | 90 |
-| 自定义压缩 | 拖动滑块或输入数值，60-100 | 用户自定义 |
+| 模式 | 说明 | quality | 适用场景 |
+|------|------|---------|----------|
+| 原图转换（默认） | 不压缩，不改尺寸，只转换格式 | 100 | 产品图、Banner、详情页、独立站高清图 |
+| 推荐压缩 | 压缩质量 90，清晰度优先 | 90 | 独立站网站图片优化 |
+| 自定义压缩 | 手动设置图片质量（60-100） | 用户自定义 | 灵活控制体积和清晰度 |
 
-- 选择「原图转换」时，忽略 quality 参数，强制 quality = 100
+- 选择「原图转换」时，忽略 quality 参数，强制 quality = 100，不 resize
 - 选择「推荐压缩」时，默认 quality = 90
 - 选择「自定义压缩」时，可拖动滑块或直接输入数值（60-100），默认 90
 - 输入低于 60 会提示画质风险，输入超过 100 自动限制为 100
+
+> **quality 说明**：quality 不是严格的"文件压缩百分比"，而是图片编码质量参数。quality 越高越清晰，但文件可能越大。低于 70 可能导致明显模糊，不推荐用于产品图或独立站主图。
 
 ### 快捷按钮
 
@@ -88,24 +90,23 @@
 ### 单图 API 示例
 
 ```bash
-# 不压缩，仅转换格式（quality=100）
+# 原图转换（不压缩，quality=100）
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\path\to\image.png" ^
   -F "instruction=convert to WebP" ^
-  -F "compress_mode=none"
+  -F "mode=original"
 
-# 压缩模式，推荐质量（默认 90）
+# 推荐压缩（quality=90）
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\path\to\image.png" ^
   -F "instruction=convert to WebP" ^
-  -F "compress_mode=lossy" ^
-  -F "quality=90"
+  -F "mode=recommended"
 
-# 自定义压缩比例
+# 自定义压缩质量
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\path\to\image.png" ^
   -F "instruction=convert to WebP" ^
-  -F "compress_mode=lossy" ^
+  -F "mode=custom" ^
   -F "quality=80"
 ```
 

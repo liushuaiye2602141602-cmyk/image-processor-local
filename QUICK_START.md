@@ -21,8 +21,12 @@
    - `width 1000px, convert to WebP, compress under 300KB`
    - `裁剪成 800x800，转成 JPG`
    - `compress under 200KB`
-3. 点击「开始处理」
-4. 下载处理后的图片
+3. 选择处理模式：
+   - **原图转换**（默认）：不压缩，只转换格式，适合产品图
+   - **推荐压缩**：quality=90，适合网站图片优化
+   - **自定义压缩**：手动设置 quality（60-100）
+4. 点击「开始处理」
+5. 下载处理后的图片
 
 ### API 调用
 
@@ -30,15 +34,22 @@
 # 健康检查
 curl http://127.0.0.1:8000/health
 
-# 单张图片处理
+# 原图转换（不压缩，quality=100）
 curl -X POST "http://127.0.0.1:8000/api/process-command" ^
   -F "image=@D:\path\to\image.png" ^
-  -F "instruction=width 1000px, convert to WebP"
+  -F "instruction=convert to WebP" ^
+  -F "mode=original"
+
+# 推荐压缩（quality=90）
+curl -X POST "http://127.0.0.1:8000/api/process-command" ^
+  -F "image=@D:\path\to\image.png" ^
+  -F "instruction=convert to WebP" ^
+  -F "mode=recommended"
 
 # 文件夹批量处理
 curl -X POST "http://127.0.0.1:8000/api/batch-process-folder" ^
   -H "Content-Type: application/json" ^
-  -d "{\"input_dir\":\"D:\\path\\to\\folder\",\"instruction\":\"convert to WebP\"}"
+  -d "{\"input_dir\":\"D:\\path\\to\\folder\",\"instruction\":\"convert to WebP\",\"mode\":\"original\"}"
 ```
 
 ## 停止服务

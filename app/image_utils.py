@@ -311,9 +311,16 @@ def process_image(
             if img.mode == "P":
                 img = img.convert("RGBA")
 
-            # 3. resize / crop
+            # 3. resize / crop（原图转换模式下跳过 resize）
             crop_params = plan.get("crop", {})
             resize_params = plan.get("resize", {})
+            compress_params = plan.get("compress", {})
+            compress_mode = compress_params.get("compress_mode", "lossy")
+
+            if compress_mode == "none":
+                # 原图转换模式：不裁剪、不缩放
+                crop_params = {}
+                resize_params = {}
 
             if crop_params:
                 img = crop_image(img, crop_params)
@@ -336,8 +343,6 @@ def process_image(
             img = convert_format(img, target_fmt)
 
             # 6. 压缩并保存
-            compress_params = plan.get("compress", {})
-            compress_mode = compress_params.get("compress_mode", "lossy")
             warning = None
             warnings = []
 
